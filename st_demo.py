@@ -108,8 +108,10 @@ def init():
     config.read('config.ini')
     demo_config = config['streamlit']
     # define models
-    t2p_demo = Text2PaletteDemo(checkpoint_path=demo_config['text2palette_checkpoint_path'])
-    col_demo = ColorizationDemo(checkpoint_path=demo_config['colorization_checkpoint_path'])
+    t2p_demo = Text2PaletteDemo(
+        checkpoint_path=demo_config['text2palette_checkpoint_path'])
+    col_demo = ColorizationDemo(
+        checkpoint_path=demo_config['colorization_checkpoint_path'])
 
     return t2p_demo, col_demo
 
@@ -184,6 +186,8 @@ if __name__ == '__main__':
         palette = rgb_list
 
         hsl = []
+
+        palette_list = []
         # 建个画板开始画
         for i in range(0, 5):
 
@@ -192,11 +196,9 @@ if __name__ == '__main__':
             b = palette[i][2]
             HEX = '#%02X%02X%02X' % (r, g, b)
             hsl.append(colorsys.rgb_to_hls(r/255, g/255, b/255))
-            # print (HEX)
-            locals()['palette'+str(i)] = Image.new('RGB',
-                                                   (100, 100), color=HEX)
+            palette_list.append(Image.new('RGB', (100, 100), color=HEX))
 
-        st.image([palette0, palette1, palette2, palette3, palette4])
+        st.image(palette_list)
 
         st.write('The adjustment shows below: ')
 
