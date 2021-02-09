@@ -133,7 +133,7 @@ if __name__ == '__main__':
         st.warning('Upload your file')
         st.stop()
 
-    image = Image.open(f)
+    image = Image.open(f).convert('RGB')
     st.sidebar.image(image, use_column_width=True)
 
     category = st.sidebar.selectbox(
