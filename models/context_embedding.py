@@ -62,7 +62,7 @@ class TextFeatureExtract:
 
 
 class CategoryAttributeHandler:
-    def __init__(self, category_path='./data/category.txt'):
+    def __init__(self, category_path='./CYS_dataset/category.txt'):
         self.category_list = []
         with open(category_path, 'r') as f:
             for line in f.readlines():
@@ -117,7 +117,7 @@ class ContextEmbedding(keras.Model):
         self.cat_fc1 = Dense(128, activation=activation)
         self.cat_fc2 = Dense(128, activation=activation)
 
-        # TODO: 
+        # TODO:
         self.lambda_img = 0.6
         self.lambda_txt = 0.3
         self.lambda_cat = 0.1
@@ -132,7 +132,8 @@ class ContextEmbedding(keras.Model):
         '''
         img_fea = self.img_feature.extract(image)   # (batch, 14, 14, 512)
         txt_fea = self.txt_feature.extract(text)    # (batch, 512)
-        cat_fea = self.cat_feature.get(category)    # (batch, 10 * category_number)
+        # (batch, 10 * category_number)
+        cat_fea = self.cat_feature.get(category)
 
         img_fea = tf.reduce_mean(img_fea, [1, 2])   # (batch, 512)
         img_fea = self.img_fc1(img_fea)
