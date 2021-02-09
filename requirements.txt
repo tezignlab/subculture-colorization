@@ -1,0 +1,5 @@
+tensorflow==2.4.1
+transformers==4.2.4
+seaborn==0.11.1
+requests==2.25.1
+matplotlib==3.3.4
