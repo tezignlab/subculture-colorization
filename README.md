@@ -5,7 +5,7 @@
 This repository is the official implementation of `Culture-inspired Multi-modal Color Palette Generation and Colorization: A Chinese Youth Subculture Case`.  
 Presented at [The 3rd IEEE Workshop on
 Artificial Intelligence for Art Creation](https://aiart2021.github.io/).  
-Links: [paper]() | [video](https://youtu.be/fLPwr-oX0ds)   
+Links: [paper](https://arxiv.org/abs/2102.05231) | [video](https://youtu.be/fLPwr-oX0ds)   
 (now the paper has not been published yet, the link will be added later)
 
 
