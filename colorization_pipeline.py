@@ -12,6 +12,7 @@ import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+import datetime
 
 # read config
 config = configparser.ConfigParser()
@@ -23,6 +24,11 @@ if not os.path.exists(training_config['checkpoint_dir']):
 
 if not os.path.exists(training_config['sample_dir']):
     os.makedirs(training_config['sample_dir'])
+
+log_dir = os.path.join(training_config['log_dir'], datetime.datetime.now().strftime('%Y%m%d-%H%M%S'))
+
+if not os.path.exists(log_dir):
+    os.makedirs(training_config['log_dir'])
 
 # create model
 gen = ColorizationGenerator()
@@ -117,7 +123,7 @@ def sample(file_name, output_dir):
             img_item = tf.image.rgb_to_grayscale(img_item)
             gray_image.append(img_item)
 
-        raw_image = np.stack(raw_image)
+        # raw_image = np.stack(raw_image)
         gray_image = np.stack(gray_image)
         rgb_image = np.stack(rgb_image)
 
@@ -177,7 +183,7 @@ def train_step(image, text, category, palette):
         img_item = tf.image.rgb_to_grayscale(img_item)
         gray_image.append(img_item)
 
-    raw_image = np.stack(raw_image)
+    # raw_image = np.stack(raw_image)
     gray_image = np.stack(gray_image)
     rgb_image = np.stack(rgb_image)
 
@@ -263,6 +269,8 @@ def train():
     dataset = dataset.repeat(count=None)
     dataset = dataset.shuffle(buffer_size=100)
 
+    train_summary_writer = tf.summary.create_file_writer(log_dir)
+
     for idx, raw_data in enumerate(dataset):
         if idx >= int(training_config.getfloat('max_iteration_number')):
             break
@@ -280,6 +288,10 @@ def train():
         if (idx + 1) % int(training_config.getfloat('print_every')) == 0:
             print("Iteration: {:5d}, Loss = (G: {:.8f}, D: {:.8f}).".format(
                 idx + 1, G_loss, D_loss))
+
+            with train_summary_writer.as_default():
+                tf.summary.scalar('G_loss', G_loss, step=idx)
+                tf.summary.scalar('D_loss', D_loss, step=idx)
 
         if (idx + 1) % int(training_config.getfloat('checkpoint_every')) == 0:
             sample(str(idx + 1), training_config['sample_dir'])
