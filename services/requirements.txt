@@ -1,0 +1,6 @@
+fastapi==0.68.1
+uvicorn==0.15.0
+torch==1.9.0
+transformers==4.9.2
+numpy==1.21.2
+scikit-image==0.18.3
