@@ -31,11 +31,13 @@ class RecordModel(Base):
     id = Column(
         Integer, primary_key=True, index=True, nullable=False, autoincrement=True
     )
+    text = Column(String)
     colors = Column(String)
     time = Column(Integer)
 
 
 class RecordBase(BaseModel):
+    text: str
     colors: str
     time: int
 
@@ -54,8 +56,8 @@ def get_records(db):
     return db.query(RecordModel).all()
 
 
-def add_record(db, colors):
-    db_record = RecordModel(colors=colors, time=time.time())
+def add_record(db, text, colors):
+    db_record = RecordModel(text=text, colors=colors, time=time.time())
 
     db.add(db_record)
     db.commit()
@@ -146,7 +148,7 @@ def generate_color(data: InputText, db=Depends(get_db)):
         rgb = rgb * 255
         rgb_5.append("#%02x%02x%02x" % tuple([int(value) for value in rgb]))
 
-    add_record(db, ",".join(rgb_5))
+    add_record(db, data.input_text, ",".join(rgb_5))
 
     return {"colors": rgb_5}
 
