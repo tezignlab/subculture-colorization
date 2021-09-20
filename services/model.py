@@ -9,10 +9,10 @@ class Sentence2Vec:
         # self.model = AutoModel.from_pretrained("DeepPavlov/bert-base-multilingual-cased-sentence")
 
         self.tokenizer = BertTokenizer.from_pretrained(
-            "bert-base-multilingual-cased", mirror="tuna"
+            "bert-base-multilingual-cased"
         )
         self.model = BertModel.from_pretrained(
-            "bert-base-multilingual-cased", mirror="tuna"
+            "bert-base-multilingual-cased"
         )
 
     def embed(self, input_string):

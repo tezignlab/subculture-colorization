@@ -1,13 +1,82 @@
 from typing import List
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
 from model import EncoderRNN, AttnDecoderRNN, Sentence2Vec
 import torch
 import numpy as np
 from skimage.color import lab2rgb
 from pydantic import BaseModel
 
+# database
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy import Column, Integer, String, Integer, create_engine
+from sqlalchemy.ext.declarative import declarative_base
+
+import time
+
+
+# define class used in database connection
+SQLALCHEMY_DATABASE_URL = "sqlite:///./data/subcolor.db"
+
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Base = declarative_base()
+
+
+class RecordModel(Base):
+    __tablename__ = "records"
+
+    id = Column(
+        Integer, primary_key=True, index=True, nullable=False, autoincrement=True
+    )
+    colors = Column(String)
+    time = Column(Integer)
+
+
+class RecordBase(BaseModel):
+    colors: str
+    time: int
+
+
+class Record(RecordBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+
+Base.metadata.create_all(bind=engine)
+
+
+def get_records(db):
+    return db.query(RecordModel).all()
+
+
+def add_record(db, colors):
+    db_record = RecordModel(colors=colors, time=time.time())
+
+    db.add(db_record)
+    db.commit()
+    db.refresh(db_record)
+    return db_record
+
+
+# database dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+# fastapi main app
 app = FastAPI()
 
+
+# define color generator related model
 encoder = EncoderRNN(hidden_size=150, n_layers=1, dropout_p=0)
 decoder = AttnDecoderRNN(hidden_size=150, n_layers=1, dropout_p=0)
 sen2vec = Sentence2Vec()
@@ -40,8 +109,8 @@ class OutputColor(BaseModel):
     colors: List[str] = []
 
 
-@app.post("/")
-def generate_color(data: InputText, response_model=OutputColor):
+@app.post("/", response_model=OutputColor)
+def generate_color(data: InputText, db=Depends(get_db)):
     text = sen2vec.embed(data.input_text)["pooler_output"].unsqueeze(0)
     rgb_5 = list()
 
@@ -75,6 +144,15 @@ def generate_color(data: InputText, response_model=OutputColor):
         )
         rgb = lab2rgb_1d(lab)
         rgb = rgb * 255
-        rgb_5.append('#%02x%02x%02x' % tuple([int(value) for value in rgb]))
+        rgb_5.append("#%02x%02x%02x" % tuple([int(value) for value in rgb]))
+
+    add_record(db, ",".join(rgb_5))
 
     return {"colors": rgb_5}
+
+
+@app.get("/poems", response_model=List[Record])
+def get_poems(db=Depends(get_db)):
+    records = get_records(db)
+
+    return records
